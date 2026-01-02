@@ -10,23 +10,22 @@ Source: [Wikipedia – Administrative divisions of Nepal](https://simple.wikiped
 
 ## Description
 
-This repository provides **JSON data** for Nepal’s administrative divisions.  
+This repository provides **JSON data** for Nepal’s administrative divisions.
 
-- Includes: **Provinces, Districts, Municipalities, Wards**  
-- Useful for web apps, dashboards, data analysis, or any project needing Nepal’s administrative data.  
-- Data is collected from official government sources and Wikipedia.  
+- Includes: **Provinces, Districts, Municipalities, Wards**
+- Useful for web apps, dashboards, data analysis, or any project needing Nepal’s administrative data.
+- Data is collected from official government sources and Wikipedia.
 
 ---
 
 ## Dataset Structure
 
-The JSON data is structured hierarchically:
+*The JSON data is structured hierarchically:*
 
-
-- **Province**: Name, code  
-- **District**: Name, code, parent province  
-- **Municipality**: Name, type (Metropolitan, Sub-Metropolitan, Municipality, Rural), parent district  
-- **Ward**: Name/number, parent municipality  
+- **Province**: Name, code
+- **District**: Name, code, parent province
+- **Municipality**: Name, type (Metropolitan, Sub-Metropolitan, Municipality, Rural), parent district
+- **Ward**: Name/number, parent municipality
 
 ---
 
@@ -35,6 +34,7 @@ The JSON data is structured hierarchically:
 Load the JSON in any programming language.
 
 **JavaScript Example:**
+
 ```javascript
 import fs from 'fs';
 
@@ -42,3 +42,4 @@ const data = JSON.parse(fs.readFileSync('local-states-nepal.json', 'utf-8'));
 console.log(data.provinces);
 
 
+```
