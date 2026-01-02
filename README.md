@@ -1,136 +1,24 @@
 # Local States Nepal
 
-##### This will help to get data about local states in Nepal based on recent administrative division
+#### Structured JSON dataset of Nepal’s provinces, districts, municipalities, and wards based on the latest administrative divisions.
 
 ![Local States Nepal](images/latest-nepal.png)
 
-Image Source: [Wikipedia(Administrative divisions of Nepal)](https://simple.wikipedia.org/wiki/Administrative_divisions_of_Nepal)
+Source: [Wikipedia – Administrative divisions of Nepal](https://simple.wikipedia.org/wiki/Administrative_divisions_of_Nepal)
 
-![Build](https://github.com/sagautam5/local-states-nepal/workflows/CI/badge.svg)
-[![Latest Stable Version](https://poser.pugx.org/sagautam5/local-states-nepal/v)](//packagist.org/packages/sagautam5/local-states-nepal)
-[![Total Downloads](https://poser.pugx.org/sagautam5/local-states-nepal/downloads)](//packagist.org/packages/sagautam5/local-states-nepal)
-[![Issues](https://img.shields.io/github/issues/sagautam5/local-states-nepal
-)](https://github.com/sagautam5/local-states-nepal/issues) [![Stars](https://img.shields.io/github/stars/sagautam5/local-states-nepal
-)](https://github.com/sagautam5/local-states-nepal/stargazers) 
-[![License](https://img.shields.io/github/license/sagautam5/local-states-nepal)](https://github.com/sagautam5/local-states-nepal/blob/master/LICENSE) 
-[![Forks](https://img.shields.io/github/forks/sagautam5/local-states-nepal
-)](https://github.com/sagautam5/local-states-nepal/network/members) 
-[![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2Fsagautam5%2Flocal-states-nepal
-)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fsagautam5%2Flocal-states-nepal)
+---
 
 ## Description
 
-  Local States Nepal is the php composer package to get structured dataset about local states in Nepal.  
-  
-  Local States Nepal requires 
-  
-  PHP >= 7.0
+This repository provides **JSON data** for Nepal’s administrative divisions.  
 
-  Version **v1.0.8** has been tested on following php versions.
+- Includes: **Provinces, Districts, Municipalities, Wards**  
+- Useful for web apps, dashboards, data analysis, or any project needing Nepal’s administrative data.  
+- Data is collected from official government sources and Wikipedia.  
 
-  - 7.0
-  - 7.1
-  - 7.2
-  - 7.3
-  - 7.4
+---
 
-  Version **v2.0.0** has been tested on following php versions.
+## Dataset Structure
 
-  - 8.0
-  - 8.1
-  - 8.2
-  - 8.3
+The JSON data is structured hierarchically:
 
-  Version **v2.0.1** has been tested on following php versions.
-
-  - 8.4
-
-## Demo
-
-You can view Province -> District -> Municipality -> Wards in following demo.
-
-
-### How to set up demo ?
-You can find all source code for demo inside demo directory. You can clone this repository in your server and then visit following url:
-
-`local_server_url/local-states-nepal/demo/`
-
-Example: http://127.0.0.1/local-states-nepal/demo
-
-![Laravel Nepal](demo/assets/images/demo-page-latest.png)
-
-Demo Video:
-
-https://www.loom.com/share/a8c3d825a9ee41a9817b24645453e979
-
-Additionally, you can setup with Docker and visit [localstates.test](http://localstates.test) to view the demo. Here is guideline for setting up with Docker. 
-    
- [Local setup with Docker](./docs/docker/setup.md)
-
-## Support
-
-Currently, This library supports following two languages.
-
-- English 
-- नेपाली
-   
-## Installation
-
-```sh
-composer require sagautam5/local-states-nepal
-```
-
-## Configuration
-
-Currently, No mandatory configuration is required for using this package. We have used english as the default language and if you want nepali you have to specify the language while using this package.
-
-## About Dataset
-All data are collected from wikipedia and various Nepal government sites. We have data set in Nepali and English format for following four entities.
-
-1. [Province](./docs/dataset/Province.md)
-2. [District](./docs/dataset/District.md)
-3. [Municipality](./docs/dataset/Municipality.md)
-4. [Category](./docs/dataset/Category.md)
-5. [Nested Data Set](./docs/dataset/NestedData.md)
-
-You can see more details about data in the link provided in above list.
-
-## Basic Usage
-
-After installation, you can use features like this:
-
-```php
-use Sagautam5\LocalStateNepal\Entities\Province;
-
-$province = new Province('np');
-
-// Get List of all Provinces
-$provincesData = $province->allProvinces();
-
-// Get List of All Provinces with District
-$provincesData = $province->getProvincesWithDistricts();
-
-// Get List of All Provinces with District and Districts with Municipalities
-$provincesData = $province->getProvincesWithDistrictsWithMunicipalities();
-``` 
-
-NOTE: Default language is 'en' and if you want 'np' then you have to specify language while creating class object.
-
-You can see more detail documentation of each entity in the links provided in following list.
-
-1. [Provinces](./docs/usage/Province.md)
-2. [Districts](./docs/usage/District.md)
-3. [Municipality](./docs/usage/Municipality.md)
-4. [Category](./docs/usage/Category.md)
-
-## Security
-
-If you discover a security vulnerability within this package, please send an e-mail to sagautam5@gmail.com, All security vulnerabilities will be promptly addressed.
-
-## 🤝 Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
-
-## 📄 License
-
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
