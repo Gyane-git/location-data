@@ -1,12 +1,14 @@
-import { getData, Lang } from "@/lib/data";
 import { NextResponse } from "next/server";
+import { getData, Lang } from "../../../../lib/data";
 
-interface Params {
-  params: { lang: string };
-}
+export async function GET(req: Request, context: { params: { lang: string } }) {
+  const lang: Lang = context.params.lang === "np" ? "np" : "en";
+  const url = new URL(req.url);
+  const district = url.searchParams.get("district");
 
-export async function GET(req: Request, { params }: Params) {
-  const lang = (params.lang as Lang) || "en";
-  const data = getData("municipalities", lang);
-  return NextResponse.json(data);
+  let municipalities = getData("municipalities", lang);
+  if (district && !isNaN(Number(district))) {
+    municipalities = municipalities.filter(m => m.district_id === Number(district));
+  }
+  return NextResponse.json(municipalities);
 }
