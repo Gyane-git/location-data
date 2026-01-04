@@ -1,12 +1,12 @@
-// import { getData, Lang } from "@/lib/data";
-// import { NextResponse } from "next/server";
+import { getData, Lang } from "@/lib/data";
+import { NextResponse } from "next/server";
 
-// interface Params {
-//   params: { lang: string };
-// }
+interface Params {
+  params: { lang: string };
+}
 
-// export async function GET(req: Request, { params }: Params) {
-//   const lang = (params.lang as Lang) || "en";
-//   const data = getData("municipalities", lang);
-//   return NextResponse.json(data);
-// }
+export async function GET(req: Request, { params }: Params) {
+  const lang = (params.lang as Lang) || "en";
+  const data = getData("municipalities", lang);
+  return NextResponse.json(data);
+}
