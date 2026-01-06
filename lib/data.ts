@@ -17,7 +17,7 @@ import categoriesNp from "../data/categories/np.json";
 export type Lang = "en" | "np";
 
 export function getData(
-  type: "provinces" | "districts" | "municipalities" | "categories" | "wards",
+  type: "provinces" | "districts" | "municipalities" | "categories" | "wards" | "alldataset",
   lang: Lang
 ) {
   switch (type) {
