@@ -1,12 +1,19 @@
-import { getData, Lang } from "@/lib/data";
 import { NextResponse } from "next/server";
 
-interface Params {
-  params: { lang: string };
-}
+type Params = {
+  lang: string;
+};
 
-export async function GET(req: Request, { params }: Params) {
-  const lang = (params.lang as Lang) || "en";
-  const data = getData("alldataset", lang);
-  return NextResponse.json(data);
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<Params> }
+) {
+  const { lang } = await params;
+
+  // 👉 Your logic goes here
+  // Example response
+  return NextResponse.json({
+    success: true,
+    language: lang,
+  });
 }
