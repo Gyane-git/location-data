@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import {
   getData,
   Lang,
@@ -685,6 +686,38 @@ export default function Home() {
           </ol>
         </div>
       </section>
+
+      <footer className="mt-8 rounded-3xl border border-slate-200 bg-white px-5 py-6 shadow-sm">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/devminlogo.png"
+              alt="DevMind Solutions Logo"
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-xl border border-slate-200 object-contain bg-white p-1"
+            />
+            <div>
+              <p className="text-sm font-semibold text-slate-900">DevMind Solutions</p>
+              <p className="text-xs text-slate-600">
+                Building reliable digital products with clean, scalable engineering.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-sm text-slate-700">
+            <p className="font-medium text-slate-900">Contact</p>
+            <a
+              href="https://gyanendrasah.com.np"
+              target="_blank"
+              rel="noreferrer"
+              className="text-slate-700 underline decoration-slate-400 underline-offset-2"
+            >
+              gyanendrasah.com.np
+            </a>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
