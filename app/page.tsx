@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Image from "next/image";
+import { useMemo, useState } from "react";
 import {
   getData,
   Lang,
@@ -14,11 +14,6 @@ import {
   RawWard,
 } from "../lib/data";
 
-type SelectOption = {
-  value: number;
-  label: string;
-};
-
 type WardItem = {
   id: string;
   name: string;
@@ -26,9 +21,9 @@ type WardItem = {
 
 type SelectProps = {
   label: string;
-  value: number | null;
-  onChange: (value: number | null) => void;
-  options: SelectOption[];
+  value: number | string | null;
+  onChange: (value: string | null) => void;
+  options: Array<{ value: string; label: string }>;
   disabled?: boolean;
   helper?: string;
 };
@@ -83,6 +78,30 @@ function normalizeWard(ward: RawWard, index: number): WardItem {
   return { id, name };
 }
 
+function toEnglishDigits(value: string): string {
+  const map: Record<string, string> = {
+    "०": "0",
+    "१": "1",
+    "२": "2",
+    "३": "3",
+    "४": "4",
+    "५": "5",
+    "६": "6",
+    "७": "7",
+    "८": "8",
+    "९": "9",
+  };
+
+  return value.replace(/[०-९]/g, (digit) => map[digit] ?? digit);
+}
+
+function parseArea(area?: string): number {
+  if (!area) return 0;
+  const normalized = toEnglishDigits(area).replace(/,/g, "").trim();
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function Select({ label, value, onChange, options, disabled = false, helper }: SelectProps) {
   return (
     <div className="space-y-2">
@@ -93,10 +112,8 @@ function Select({ label, value, onChange, options, disabled = false, helper }: S
       <select
         value={value ?? ""}
         disabled={disabled}
-        onChange={(event) =>
-          onChange(event.target.value ? Number(event.target.value) : null)
-        }
-        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100"
+        onChange={(event) => onChange(event.target.value || null)}
+        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100"
       >
         <option value="">-- Select {label} --</option>
         {options.map((option) => (
@@ -111,9 +128,9 @@ function Select({ label, value, onChange, options, disabled = false, helper }: S
 
 function StatCard({ label, value, hint }: StatCardProps) {
   return (
-    <div className="glass-card rounded-2xl p-4">
+    <div className="glass-card rounded-2xl p-3 sm:p-4 min-h-[118px]">
       <p className="text-xs uppercase tracking-[0.14em] text-slate-500">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
+      <p className="mt-1.5 text-2xl font-bold text-slate-900 sm:text-3xl">{value}</p>
       <p className="mt-1 text-xs text-slate-500">{hint}</p>
     </div>
   );
@@ -121,7 +138,7 @@ function StatCard({ label, value, hint }: StatCardProps) {
 
 function InfoCard({ title, subtitle, area, website, headquarters }: InfoCardProps) {
   return (
-    <article className="glass-card rounded-2xl p-4">
+    <article className="glass-card rounded-2xl p-3 sm:p-4">
       <h3 className="text-base font-semibold text-slate-900">{title}</h3>
       <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
       <div className="mt-3 space-y-1 text-xs text-slate-600">
@@ -150,103 +167,11 @@ export default function Home() {
   const [selectedWardId, setSelectedWardId] = useState<string | null>(null);
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
 
-  const [districtQuery, setDistrictQuery] = useState("");
-  const [municipalityQuery, setMunicipalityQuery] = useState("");
-  const [wardQuery, setWardQuery] = useState("");
-
   const provinces = getData("provinces", lang);
   const districtsData = getData("districts", lang);
   const municipalitiesData = getData("municipalities", lang);
   const categories = getData("categories", lang);
   const allDataset = getData("alldataset", lang);
-
-  const selectedProvince = useMemo<Province | undefined>(
-    () => provinces.find((item) => item.id === provinceId),
-    [provinces, provinceId]
-  );
-
-  const districts = useMemo<District[]>(() => {
-    if (provinceId == null) {
-      return [];
-    }
-
-    return districtsData.filter((district) => district.province_id === provinceId);
-  }, [provinceId, districtsData]);
-
-  const filteredDistricts = useMemo<District[]>(() => {
-    const query = districtQuery.trim().toLowerCase();
-    if (!query) {
-      return districts;
-    }
-
-    return districts.filter((district) => district.name.toLowerCase().includes(query));
-  }, [districts, districtQuery]);
-
-  const selectedDistrict = useMemo<District | undefined>(
-    () => districts.find((item) => item.id === districtId),
-    [districts, districtId]
-  );
-
-  const municipalities = useMemo<Municipality[]>(() => {
-    if (districtId == null) {
-      return [];
-    }
-
-    return municipalitiesData.filter((municipality) => municipality.district_id === districtId);
-  }, [districtId, municipalitiesData]);
-
-  const filteredMunicipalities = useMemo<Municipality[]>(() => {
-    const query = municipalityQuery.trim().toLowerCase();
-    if (!query) {
-      return municipalities;
-    }
-
-    return municipalities.filter((municipality) => municipality.name.toLowerCase().includes(query));
-  }, [municipalities, municipalityQuery]);
-
-  const selectedMunicipality = useMemo<Municipality | undefined>(
-    () => municipalities.find((item) => item.id === municipalityId),
-    [municipalities, municipalityId]
-  );
-
-  const wards = useMemo<WardItem[]>(() => {
-    if (provinceId == null || districtId == null || municipalityId == null) {
-      return [];
-    }
-
-    const province = allDataset.find((item) => item.id === provinceId);
-    if (!province) {
-      return [];
-    }
-
-    const district = getDistrictList(province).find((item) => item.id === districtId);
-    if (!district) {
-      return [];
-    }
-
-    const municipality = getMunicipalityList(district).find(
-      (item) => item.id === municipalityId
-    );
-    if (!municipality) {
-      return [];
-    }
-
-    return municipality.wards.map(normalizeWard);
-  }, [provinceId, districtId, municipalityId, allDataset]);
-
-  const filteredWards = useMemo<WardItem[]>(() => {
-    const query = wardQuery.trim().toLowerCase();
-    if (!query) {
-      return wards;
-    }
-
-    return wards.filter((ward) => ward.name.toLowerCase().includes(query));
-  }, [wards, wardQuery]);
-
-  const selectedWard = useMemo<WardItem | undefined>(
-    () => wards.find((ward) => ward.id === selectedWardId),
-    [wards, selectedWardId]
-  );
 
   const categoryById = useMemo(() => {
     const lookup = new Map<number, string>();
@@ -256,23 +181,88 @@ export default function Home() {
     return lookup;
   }, [categories]);
 
-  const provinceOptions = useMemo<SelectOption[]>(
-    () => provinces.map((province) => ({ value: province.id, label: province.name })),
+  const selectedProvince = useMemo<Province | undefined>(
+    () => provinces.find((item) => item.id === provinceId),
+    [provinces, provinceId]
+  );
+
+  const districts = useMemo<District[]>(() => {
+    if (provinceId == null) return [];
+    return districtsData.filter((district) => district.province_id === provinceId);
+  }, [provinceId, districtsData]);
+
+  const selectedDistrict = useMemo<District | undefined>(
+    () => districts.find((item) => item.id === districtId),
+    [districts, districtId]
+  );
+
+  const municipalities = useMemo<Municipality[]>(() => {
+    if (districtId == null) return [];
+    return municipalitiesData.filter((municipality) => municipality.district_id === districtId);
+  }, [districtId, municipalitiesData]);
+
+  const selectedMunicipality = useMemo<Municipality | undefined>(
+    () => municipalities.find((item) => item.id === municipalityId),
+    [municipalities, municipalityId]
+  );
+
+  const wards = useMemo<WardItem[]>(() => {
+    if (provinceId == null || districtId == null || municipalityId == null) return [];
+
+    const province = allDataset.find((item) => item.id === provinceId);
+    if (!province) return [];
+
+    const district = getDistrictList(province).find((item) => item.id === districtId);
+    if (!district) return [];
+
+    const municipality = getMunicipalityList(district).find((item) => item.id === municipalityId);
+    if (!municipality) return [];
+
+    return municipality.wards.map(normalizeWard);
+  }, [provinceId, districtId, municipalityId, allDataset]);
+
+  const selectedWard = useMemo<WardItem | undefined>(
+    () => wards.find((ward) => ward.id === selectedWardId),
+    [wards, selectedWardId]
+  );
+
+  const completionScore = useMemo(() => {
+    let score = 0;
+    if (provinceId != null) score += 25;
+    if (districtId != null) score += 25;
+    if (municipalityId != null) score += 25;
+    if (selectedWardId != null) score += 25;
+    return score;
+  }, [provinceId, districtId, municipalityId, selectedWardId]);
+
+  const topMunicipalities = useMemo(() => {
+    return [...municipalities]
+      .sort((a, b) => parseArea(b.area_sq_km) - parseArea(a.area_sq_km))
+      .slice(0, 6);
+  }, [municipalities]);
+
+  const provinceOptions = useMemo<Array<{ value: string; label: string }>>(
+    () => provinces.map((province) => ({ value: String(province.id), label: province.name })),
     [provinces]
   );
 
-  const districtOptions = useMemo<SelectOption[]>(
-    () => filteredDistricts.map((district) => ({ value: district.id, label: district.name })),
-    [filteredDistricts]
+  const districtOptions = useMemo<Array<{ value: string; label: string }>>(
+    () => districts.map((district) => ({ value: String(district.id), label: district.name })),
+    [districts]
   );
 
-  const municipalityOptions = useMemo<SelectOption[]>(
+  const municipalityOptions = useMemo<Array<{ value: string; label: string }>>(
     () =>
-      filteredMunicipalities.map((municipality) => ({
-        value: municipality.id,
+      municipalities.map((municipality) => ({
+        value: String(municipality.id),
         label: `${municipality.name} (${categoryById.get(municipality.category_id) ?? ""})`,
       })),
-    [filteredMunicipalities, categoryById]
+    [municipalities, categoryById]
+  );
+
+  const wardOptions = useMemo<Array<{ value: string; label: string }>>(
+    () => wards.map((ward) => ({ value: ward.id, label: ward.name })),
+    [wards]
   );
 
   const selectedAddress = useMemo(() => {
@@ -285,6 +275,7 @@ export default function Home() {
     ]
       .filter(Boolean)
       .join(", ");
+
     return parts || "Nepal";
   }, [selectedWard, selectedMunicipality, selectedDistrict, selectedProvince]);
 
@@ -325,8 +316,7 @@ export default function Home() {
     {
       title: "Wards",
       endpoint: `/api/wards/${lang}?province=${provinceParam}&district=${districtParam}&municipality=${municipalityParam}`,
-      description:
-        "Returns normalized wards for the selected municipality. Handles mixed ward data shapes internally.",
+      description: "Returns normalized wards for the selected municipality.",
       howToUse: "Send province, district, and municipality ids together to get ward list for map focus.",
     },
     {
@@ -341,39 +331,35 @@ export default function Home() {
     {
       title: "Map Embed URL",
       value: mapEmbedUrl,
-      description:
-        "This URL is used inside the iframe. It auto-focuses the selected province, district, municipality, and optional ward.",
+      description: "Iframe URL that auto-focuses your selected address.",
     },
     {
       title: "Open Map URL",
       value: mapExternalUrl,
-      description:
-        "This URL opens the same selected area in full Google Maps view in a new tab.",
+      description: "External Google Maps URL for full navigation mode.",
     },
     {
       title: "Focus Source",
       value: selectedAddress,
-      description:
-        "Selected ward has highest priority, then municipality, district, and province. The highlighted area panel shows the exact focus text.",
+      description: "Ward is highest priority, then municipality, district, and province.",
     },
   ];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
-      <section className="hero-panel rounded-3xl p-6 md:p-10">
+    <main className="mx-auto max-w-6xl px-3 py-5 sm:px-4 sm:py-7 md:px-6 md:py-10">
+      <section className="hero-panel rounded-2xl p-4 sm:rounded-3xl sm:p-6 md:p-10">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-700">Nepal Public Data Portal</p>
-            <h1 className="mt-2 text-3xl font-bold leading-tight text-slate-900 md:text-5xl">
+            <h1 className="mt-2 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl md:text-5xl">
               Administrative Intelligence Dashboard
             </h1>
             <p className="mt-3 max-w-3xl text-sm text-slate-700 md:text-base">
-              Browse provinces, districts, municipalities, and wards with bilingual support,
-              live filtering, and structured detail panels.
+              Explore verified location datasets with map-ready selections and public APIs.
             </p>
           </div>
 
-          <div className="inline-flex rounded-2xl border border-slate-300 bg-white/80 p-1 shadow-sm">
+          <div className="grid w-full grid-cols-2 rounded-2xl border border-slate-300 bg-white/80 p-1 shadow-sm sm:inline-flex sm:w-auto">
             {(["en", "np"] as Lang[]).map((language) => (
               <button
                 key={language}
@@ -383,11 +369,8 @@ export default function Home() {
                   setDistrictId(null);
                   setMunicipalityId(null);
                   setSelectedWardId(null);
-                  setDistrictQuery("");
-                  setMunicipalityQuery("");
-                  setWardQuery("");
                 }}
-                className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                className={`w-full rounded-xl px-4 py-2 text-sm font-medium transition ${
                   lang === language
                     ? "bg-slate-900 text-white"
                     : "bg-transparent text-slate-700 hover:bg-slate-100"
@@ -400,135 +383,139 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="mt-5 sm:hidden">
+        <div className="glass-card rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Location Summary</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+              <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Provinces</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">{provinces.length}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+              <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Districts</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">{districts.length}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+              <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Municipalities</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">{municipalities.length}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+              <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Wards</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">{wards.length}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-6 hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Provinces" value={provinces.length} hint="Total available" />
         <StatCard label="Districts" value={districts.length} hint="In selected province" />
         <StatCard label="Municipalities" value={municipalities.length} hint="In selected district" />
         <StatCard label="Wards" value={wards.length} hint="In selected municipality" />
       </section>
 
-      <section className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="glass-card rounded-3xl p-5 md:p-6">
+      <section className="mt-5 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="glass-card rounded-2xl p-4 sm:rounded-3xl sm:p-5 md:p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-slate-900">Explorer</h2>
-            <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white">Interactive</span>
+            <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white">Selection Flow</span>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
             <Select
               label="Province"
               value={provinceId}
               onChange={(value) => {
-                setProvinceId(value);
+                setProvinceId(value ? Number(value) : null);
                 setDistrictId(null);
                 setMunicipalityId(null);
                 setSelectedWardId(null);
-                setDistrictQuery("");
-                setMunicipalityQuery("");
-                setWardQuery("");
               }}
               options={provinceOptions}
               helper={`${provinces.length} options`}
             />
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold tracking-wide text-slate-700">Filter Districts</label>
-              <input
-                value={districtQuery}
-                onChange={(event) => setDistrictQuery(event.target.value)}
-                placeholder="Type district name"
-                disabled={provinceId == null}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100"
-              />
-            </div>
 
             <Select
               label="District"
               value={districtId}
               disabled={provinceId == null}
               onChange={(value) => {
-                setDistrictId(value);
+                setDistrictId(value ? Number(value) : null);
                 setMunicipalityId(null);
                 setSelectedWardId(null);
-                setMunicipalityQuery("");
-                setWardQuery("");
               }}
               options={districtOptions}
-              helper={`${filteredDistricts.length} shown`}
+              helper={`${districts.length} options`}
             />
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold tracking-wide text-slate-700">Filter Municipalities</label>
-              <input
-                value={municipalityQuery}
-                onChange={(event) => setMunicipalityQuery(event.target.value)}
-                placeholder="Type municipality name"
-                disabled={districtId == null}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100"
-              />
-            </div>
 
             <Select
               label="Municipality"
               value={municipalityId}
               disabled={districtId == null}
               onChange={(value) => {
-                setMunicipalityId(value);
+                setMunicipalityId(value ? Number(value) : null);
                 setSelectedWardId(null);
-                setWardQuery("");
               }}
               options={municipalityOptions}
-              helper={`${filteredMunicipalities.length} shown`}
+              helper={`${municipalities.length} options`}
             />
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-semibold tracking-wide text-slate-700">Ward (Map Focus)</label>
-                <span className="text-xs text-slate-500">{wards.length} options</span>
-              </div>
-              <select
-                value={selectedWardId ?? ""}
-                disabled={wards.length === 0}
-                onChange={(event) => setSelectedWardId(event.target.value || null)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100"
-              >
-                <option value="">-- Select Ward (Optional) --</option>
-                {wards.map((ward) => (
-                  <option key={ward.id} value={ward.id}>
-                    {ward.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold tracking-wide text-slate-700">Filter Wards</label>
-              <input
-                value={wardQuery}
-                onChange={(event) => setWardQuery(event.target.value)}
-                placeholder="Type ward name"
-                disabled={wards.length === 0}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100"
-              />
-            </div>
+            <Select
+              label="Ward (Map Focus)"
+              value={selectedWardId}
+              disabled={wards.length === 0}
+              onChange={setSelectedWardId}
+              options={wardOptions}
+              helper={`${wards.length} options`}
+            />
           </div>
-        </div>
 
-        <div className="glass-card rounded-3xl p-5 md:p-6">
-          <h2 className="text-xl font-semibold text-slate-900">API Snapshot</h2>
-          <p className="mt-2 text-sm text-slate-600">Quick endpoint references for current language and filters.</p>
-          <div className="mt-4 space-y-2 text-xs text-slate-700">
-            <p className="rounded-lg bg-slate-100 px-3 py-2 font-mono">/api/provinces/{lang}</p>
-            <p className="rounded-lg bg-slate-100 px-3 py-2 font-mono">/api/districts/{lang}?province={provinceId ?? "{id}"}</p>
-            <p className="rounded-lg bg-slate-100 px-3 py-2 font-mono">/api/municipalities/{lang}?district={districtId ?? "{id}"}</p>
-            <p className="rounded-lg bg-slate-100 px-3 py-2 font-mono">
-              /api/wards/{lang}?province={provinceId ?? "{id}"}&district={districtId ?? "{id}"}&municipality={municipalityId ?? "{id}"}
+          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:mt-5 sm:p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-slate-800">Selection Completion</p>
+              <p className="text-sm font-semibold text-slate-900">{completionScore}%</p>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200">
+              <div className="h-full rounded-full bg-slate-900 transition-all" style={{ width: `${completionScore}%` }} />
+            </div>
+            <p className="mt-2 text-xs text-slate-600">
+              Complete all levels for most accurate map highlight and ward-level detail.
             </p>
           </div>
         </div>
+
+        <div className="glass-card rounded-2xl p-4 sm:rounded-3xl sm:p-5 md:p-6">
+          <h2 className="text-xl font-semibold text-slate-900">Top Municipalities by Area</h2>
+          <p className="mt-2 text-sm text-slate-600">Ranked from your currently selected district.</p>
+
+          {topMunicipalities.length > 0 ? (
+            <div className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-3">
+              {topMunicipalities.map((municipality, index) => {
+                const maxArea = parseArea(topMunicipalities[0]?.area_sq_km);
+                const width = maxArea > 0 ? (parseArea(municipality.area_sq_km) / maxArea) * 100 : 0;
+
+                return (
+                  <div key={municipality.id} className="rounded-xl border border-slate-200 bg-white p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {index + 1}. {municipality.name}
+                      </p>
+                      <span className="text-xs text-slate-600">{municipality.area_sq_km} sq.km</span>
+                    </div>
+                    <div className="mt-2 h-2 rounded-full bg-slate-200">
+                      <div className="h-2 rounded-full bg-sky-600" style={{ width: `${width}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-600">Select a district to view top municipalities by area.</p>
+          )}
+        </div>
       </section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
+      <section className="mt-5 grid gap-3 sm:mt-6 sm:gap-4 md:grid-cols-3">
         <InfoCard
           title={selectedProvince?.name ?? "Province"}
           subtitle={selectedProvince ? "Current province selection" : "Choose a province to see metadata"}
@@ -557,39 +544,13 @@ export default function Home() {
         />
       </section>
 
-      <section className="mt-6 glass-card rounded-3xl p-5 md:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-slate-900">Ward Directory</h2>
-          <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white">
-            {filteredWards.length} visible
-          </span>
-        </div>
-
-        {filteredWards.length > 0 ? (
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {filteredWards.map((ward) => (
-              <div
-                key={ward.id}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm"
-              >
-                {ward.name}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-slate-600">
-            No wards to display yet. Choose province, district, and municipality.
-          </p>
-        )}
-      </section>
-
-      <section className="mt-6 glass-card rounded-3xl p-5 md:p-6">
+      <section className="mt-5 glass-card rounded-2xl p-4 sm:mt-6 sm:rounded-3xl sm:p-5 md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">Location Map</h2>
             <p className="mt-1 text-sm text-slate-600">Map updates from your dropdown selections.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <button
               onClick={() => setMapRefreshKey((value) => value + 1)}
               className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-800 hover:bg-slate-100"
@@ -612,38 +573,31 @@ export default function Home() {
           <p className="mt-1 text-sm font-medium text-amber-900">{selectedAddress}</p>
         </div>
 
-        <p className="mt-3 text-sm text-slate-700">Current location: {selectedAddress}</p>
         <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
           <iframe
             title="Selected location map"
             src={mapEmbedUrl}
-            className="h-[360px] w-full"
+            className="h-[300px] w-full sm:h-[360px] lg:h-[420px]"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
         </div>
       </section>
 
-      <section className="mt-6 glass-card rounded-3xl p-5 md:p-6">
+      <section className="mt-5 glass-card rounded-2xl p-4 sm:mt-6 sm:rounded-3xl sm:p-5 md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">Public API Guide</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Beginner-friendly reference for using this site as a public data API.
-            </p>
+            <p className="mt-1 text-sm text-slate-600">Beginner-friendly reference for using this site as a public data API.</p>
           </div>
-          <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white">
-            Language: {lang.toUpperCase()}
-          </span>
+          <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white">Language: {lang.toUpperCase()}</span>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {apiDocs.map((api) => (
             <article key={api.title} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="text-base font-semibold text-slate-900">{api.title}</h3>
-              <p className="mt-2 rounded-lg bg-slate-100 px-3 py-2 font-mono text-xs text-slate-800">
-                {api.endpoint}
-              </p>
+              <p className="mt-2 rounded-lg bg-slate-100 px-3 py-2 font-mono text-xs text-slate-800">{api.endpoint}</p>
               <p className="mt-3 text-sm text-slate-700">{api.description}</p>
               <p className="mt-2 text-xs text-slate-600">
                 <span className="font-semibold text-slate-800">How to use:</span> {api.howToUse}
@@ -652,42 +606,21 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4">
-          <h3 className="text-sm font-semibold text-sky-900">How this works (simple flow)</h3>
-          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-sky-900">
-            <li>Load provinces, then user selects one.</li>
-            <li>Use selected province id to fetch districts.</li>
-            <li>Use selected district id to fetch municipalities.</li>
-            <li>Use province + district + municipality ids to fetch wards.</li>
-            <li>Selected location text is sent to map search to focus/highlight that area.</li>
-          </ol>
-        </div>
-
         <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
           <h3 className="text-sm font-semibold text-emerald-900">Map Guide (for new users)</h3>
           <div className="mt-3 space-y-3">
             {mapDocs.map((item) => (
               <article key={item.title} className="rounded-xl border border-emerald-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-800">
-                  {item.title}
-                </p>
-                <p className="mt-1 break-all rounded-md bg-emerald-100 px-2 py-1 font-mono text-xs text-emerald-900">
-                  {item.value}
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-800">{item.title}</p>
+                <p className="mt-1 break-all rounded-md bg-emerald-100 px-2 py-1 font-mono text-xs text-emerald-900">{item.value}</p>
                 <p className="mt-2 text-xs text-emerald-900">{item.description}</p>
               </article>
             ))}
           </div>
-          <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-emerald-900">
-            <li>Choose Province, then District, then Municipality.</li>
-            <li>Optionally choose a Ward to zoom focus more precisely.</li>
-            <li>Use Reload Map if map tile does not refresh instantly.</li>
-            <li>Use Open in Google Maps for full navigation mode.</li>
-          </ol>
         </div>
       </section>
 
-      <footer className="mt-8 rounded-3xl border border-slate-200 bg-white px-5 py-6 shadow-sm">
+      <footer className="mt-6 rounded-2xl border border-slate-200 bg-white px-4 py-5 shadow-sm sm:mt-8 sm:rounded-3xl sm:px-5 sm:py-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div className="flex items-center gap-3">
             <Image
