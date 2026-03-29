@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+
 export const metadata: Metadata = {
   title: "Nepal Administrative Data",
   description: "Province, district, municipality, and ward dataset for Nepal",
-  icons: {
-    icon: "/devminlogo.png",
-    shortcut: "/devminlogo.png",
-    apple: "/devminlogo.png",
+  openGraph: {      
+    title: "Nepal Administrative Data",
+    description: "Province, district, municipality, and ward dataset for Nepal",
   },
+  twitter: {
+    title: "Nepal Administrative Data",
+    description: "Province, district, municipality, and ward dataset for Nepal",
+  },
+  
 };
+
 
 export default function RootLayout({
   children,
