@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🇳🇵 Nepal Location Data (Next.js)
 
-## Getting Started
+A complete and structured dataset of Nepal’s administrative divisions — built with precision and clarity.
 
-First, run the development server:
+This project provides detailed information about:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+* Provinces
+* Districts
+* Metropolitan Cities
+* Sub-Metropolitan Cities
+* Municipalities
+* Rural Municipalities
+
+Along with:
+
+* 📍 Headquarters
+* 🌐 Official Websites
+* 📏 Area (sq. km)
+
+---
+
+## 🚀 Tech Stack
+
+* Next.js
+* JSON Data Structure
+* REST-style API (optional usage)
+
+---
+
+## 📂 Data Coverage
+
+✔ All 7 Provinces
+✔ All Districts
+✔ All Local Levels
+✔ Area (sq. km)
+✔ Headquarters Names
+✔ Official Government Websites
+
+---
+
+## 📊 Example Data Format
+
+```json
+{
+  "province": "Bagmati",
+  "district": "Kathmandu",
+  "local_level": "Kathmandu Metropolitan City",
+  "type": "Metro",
+  "area_sq_km": 49.45,
+  "headquarter": "Kathmandu",
+  "website": "https://kathmandu.gov.np"
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌍 Use Cases
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* Web & Mobile Apps
+* Government / Civic Tech Projects
+* GIS & Mapping Systems
+* Data Analysis & Visualization
+* Educational Projects
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ⚡ Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+git clone https://github.com/your-username/nepal-location-data.git
+cd nepal-location-data
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📌 Why This Project?
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Nepal’s administrative data is often scattered, inconsistent, or outdated.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project aims to:
+
+* Centralize all location data
+* Maintain structured and clean format
+* Help developers build faster and smarter
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome.
+If you find missing or incorrect data, feel free to improve it.
+
+---
+
+## 📜 License
+
+MIT License
+
+---
+
+## 💬 Final Note
+
+From mountains to municipalities —
+every line of data tells a story of place, people, and identity.
+
+Build something meaningful with it.
